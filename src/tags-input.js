@@ -261,6 +261,41 @@ export default function TagsInputDirective($timeout, $document, $window, $q, tag
         $timeout(() => { input[0].focus(); });
       };
 
+      //////////////////
+      var threshold = tagsInputConfig.getTextAutosizeThreshold();
+
+      attrs.$observe('placeholder', function (value) {
+          input[0].setAttribute('placeholder', value);
+
+          var span = angular.element(input[0].parentElement.getElementsByTagName('span')[0]),
+              width;
+
+          if (span) {
+              width = span.prop('offsetWidth');
+          }
+
+          angular.element(input[0]).css('width', width ? width + threshold + 'px' : '');
+      });
+
+      input[0].onfocus = function () {
+          input[0].classList.remove("ingo-invisible");
+      };
+      input[0].onfocusout = function () {
+          console.log('>>>>> OL',input[0].value);
+          !input[0].value && scope.tagList.items.length && input[0].classList.add("ingo-invisible");
+      };
+
+      scope.$watch('tagList.items', function (value) {
+          if (!value.length) {
+              input[0].setAttribute('placeholder', attrs.placeholder);
+              input[0].classList.remove("ingo-invisible");
+          } else {
+              input[0].setAttribute('placeholder', '');
+              input[0].classList.add("ingo-invisible");
+          }
+      }, true);
+      //////////////////
+
       ngModelCtrl.$isEmpty = value => !value || !value.length;
 
       scope.newTag = {
